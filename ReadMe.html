@@ -1,0 +1,125 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<title>Arma2NETAndroid Plugin</title>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+
+</head>
+<body>
+
+<center>
+<h1>Arma2NETAndroid Plugin ReadMe</h1>
+</center>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#intro">Introduction</a></li>
+<li><a href="#systemreqs">Requirements</a></li>
+<li><a href="#howto">How To Use</a></li>
+<li><a href="#known_issues">Known Issues</a></li>
+<li><a href="#troubleshooting">Troubleshooting</a></li>
+<li><a href="#developers">For Developers</a></li>
+<li><a href="#changelog">Changelog</a></li>
+<li><a href="#license">License</a></li>
+<li><a href="#thanks">Thanks To</a></li>
+</ul>
+
+
+<a name="intro"><h2>Introduction</h2></a>
+
+<p>Links:</p>
+<ul>
+	<li><a href="https://github.com/firefly2442/Arma2NETAndroid-Plugin">Arma2NETAndroid Plugin</a></li>
+</ul>
+
+<p>This is a clientside plugin that connects <a href="http://www.arma3.com/">Arma</a> to your <a href="http://www.android.com/">Android</a> phone/tablet.  It uses the
+<a href="https://dev-heaven.net/projects/a2n">Arma2NET</a> wrapper system.  It is written in C#.</p>
+
+
+
+<img src="images/diagram.png" alt="Diagram" title="Diagram" />
+
+
+<a name="systemreqs"><h2>Requirements</h2></a>
+
+To run the plugin:
+<ul>
+	<li><a href="https://dev-heaven.net/projects/a2n" target="_blank">Arma2NET</a>, this should already be included if you downloaded a compiled
+	version of this plugin.</li>
+</ul>
+
+
+<a name="howto"><h2>How To Use Arma2NETAndroid Plugin</h2></a>
+
+<p>Put the plugin in the appropriate folder for @Arma2NET.  The folder structure for Arma2NET should look like the following.  Note that if you downloaded a compiled version of the plugin,
+this should already be included and already setup correctly.</p>
+
+<ul>
+	<li>
+		<pre>This is just an example location for Arma 3, you'll have to figure out where your Arma game folder is.</pre>
+		<pre>C:\Program Files\Steam\SteamApps\common\Arma 3\@Arma2NET\</pre>
+		<pre>C:\Program Files\Steam\SteamApps\common\Arma 3\@Arma2NET\Addins\</pre>
+		<pre>C:\Program Files\Steam\SteamApps\common\Arma 3\@Arma2NET\AddIns\Arma2NETAndroidPlugin\</pre>
+		<pre>C:\Program Files\Steam\SteamApps\common\Arma 3\@Arma2NET\AddIns\Arma2NETAndroidPlugin\Arma2NETAndroidPlugin.dll</pre>
+	</li>
+</ul>
+
+
+<a name="known_issues"><h2>Known Issues</h2></a>
+
+<p>None at this time.</p>
+
+<a name="troubleshooting"><h2>Troubleshooting</h2></a>
+
+<p>Make sure all software firewalls (Windows firewall, antivirus firewall, etc...) allow UDP port 65041 and TCP port 65042.  Most programs should prompt
+you at the beginning when it tries to make a connection.  All network connections should be on the same subnet and will not leave your local network.</p>
+
+<p>If you found a bug, please create an issue ticket on
+<a href="https://github.com/firefly2442/Arma2NETAndroid-Plugin">Github</a>.</p>
+<p>There will be a thread on the BIS forums at some point in the future once it gets closer to release.
+The forums are preferred over emailing me because then the question/answer is available to
+future people who have similar problems.  If you post any questions anywhere, please post the log files as well.</p>
+
+<p>Logs files can be found here so if you're troubleshooting stuff, check there first.</p>
+<pre>C:\Users\Username\AppData\Local\Arma2NETAndroid\logs</pre>
+
+
+<a name="developers"><h2>For Developers</h2></a>
+
+<p>The overview of events for networking is the following:</p>
+
+<ol>
+	<li>Plugin sends out UDP message on port 65041.  This is similar to a heartbeat message since we don't know what IP address the Android phone is running on.</li>
+	<li>Plugin sets up a TCP thread on port 65042 to listen for incoming Android connections and data.</li>
+	<li>Android phone receives UDP message on port 65041 and remembers the IP address of the Arma computer.</li>
+	<li>Android phone sends TCP connection request on port 65042.</li>
+	<li>At this point, the handshake is complete and all data transfer is done between the two using TCP.</li>
+	<li>If there is a network failure or one system dies, the connection can be re-established via the UDP heartbeat and the above steps.</li>
+</ol>
+
+<a name="changelog"><h2>Changelog</h2></a>
+
+<ul>
+<li>Version 0.1
+	<ul>
+		<li>Testing...</li>
+	</ul>
+</li>
+</ul>
+
+<a name="license"><h2>License</h2></a>
+
+<p>Arma2NETMySQL is licensed under the <a href="license.txt" target="_blank">GPL version 3</a>.  If you would like
+to contribute code or fixes, please fork the project on <a href="https://github.com/firefly2442/Arma2NETAndroid-Plugin">Github</a> and submit a pull request.</p>
+
+<a name="thanks"><h2>Thanks To</h2></a>
+
+<ul>
+<li>Thanks to Scott_NZ for <a href="https://dev-heaven.net/projects/a2n">Arma2NET</a></li>
+<li>Thanks to all the guys over at <a href="http://www.alphasquad.net" target="_blank">AlphaSquad</a>.</li>
+<li>Thanks to all the testers.</li>
+<li><a href="http://www.bistudio.com" target="_blank">Bohemia Interactive</a> for creating an awesome game and staying true to the community.</li>
+</ul>
+
+</body>
+</html>
