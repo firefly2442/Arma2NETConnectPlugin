@@ -3,21 +3,25 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using Arma2Net.AddInProxy;
+using Arma2Net;
 
 namespace Arma2NETAndroidPlugin
 {
     //the function name for the plugin (called from Arma side)
-    [AddIn("Arma2NETAndroid", Version = "0.1.0.0", Publisher = "firefly2442", Description = "Passes information from Arma to Android.")]
-    public class Arma2NETAndroid : AsyncAddIn
+    [Addin("Arma2NETAndroid", Version = "0.1.0.0", Author = "firefly2442", Description = "Passes information from Arma to Android.")]
+    public class Arma2NETAndroid : Addin
     {
         //AsyncAddIn - when you want to pass data from the game and immediately return null
         // then, subsequent checks by the game check to see if the data can be returned.
         //On the SQF side, this means that we can only do one call at a time...
 
+        public Arma2NETAndroid()
+        {
+            InvocationMethod = new AsyncAddinInvocationMethod(this);
+        }
 
         //This method is called when callExtension is used from SQF:
-        public override string InvokeAsync(string args, int maxResultSize, CancellationToken token)
+        public override string Invoke(string args, int maxResultSize)
         {
             //if we haven't setup the connection yet, this will do it
             Startup.StartupConnection();
@@ -42,11 +46,6 @@ namespace Arma2NETAndroidPlugin
                 Logger.addMessage(Logger.LogType.Error, "The number and/or format of the arguments passed in doesn't match.");
                 throw new ArgumentException();
             }
-        }
-
-        public override void Unload()
-        {
-            Startup.Unload();
         }
     }
 }
