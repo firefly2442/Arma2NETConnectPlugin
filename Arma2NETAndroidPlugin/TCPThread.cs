@@ -5,27 +5,17 @@ using System.Linq;
 using System.Text;
 using System.Net.Sockets;
 using System.Net;
+using System.IO;
 
 namespace Arma2NETAndroidPlugin
 {
-    class Message
-    {
-        public string utility;
-        public string value;
-
-        public Message(string utility, string value)
-        {
-            //constructor
-            this.utility = utility;
-            this.value = value;
-        }
-    }
-
     class TCPThread
     {
         private TcpListener tcp_listener = null;
+        public bool connected = false;
         //thread safe queue for adding/removing entries
-        public BlockingCollection<Message> messages = new BlockingCollection<Message>();
+        public BlockingCollection<string> messages = new BlockingCollection<string>(); //outgoing messages
+        public static BlockingCollection<string> inbound_messages = new BlockingCollection<string>(); //inbound messages
 
         public TCPThread()
         {
@@ -36,7 +26,7 @@ namespace Arma2NETAndroidPlugin
 
         public void run()
         {
-            Logger.addMessage(Logger.LogType.Info, "Run thread, inside method.");
+            //Logger.addMessage(Logger.LogType.Info, "Run thread, inside method.");
             byte[] rcvBuffer = new byte[16384]; // Receive buffer, 16KB (corresponds to callExtension limit in Arma)
             while (true)
             {
@@ -45,30 +35,62 @@ namespace Arma2NETAndroidPlugin
                 NetworkStream netStream = null;
                 try
                 {
+                    //this blocks until a connection is made
                     client = tcp_listener.AcceptTcpClient(); // Get client connection
                     netStream = client.GetStream();
-                    Logger.addMessage(Logger.LogType.Info, "Stream up.");
+                    connected = true;
+                    //Logger.addMessage(Logger.LogType.Info, "Stream up.");
                     // Receive until client closes connection, indicated by 0 return value
-                    netStream.Read(rcvBuffer, 0, rcvBuffer.Length);
+                    int bytesRcvd;
+                    String result = "";
+                    while (((bytesRcvd = netStream.Read(rcvBuffer, 0, rcvBuffer.Length)) > 0)) {
+                        result = result + System.Text.Encoding.UTF8.GetString(rcvBuffer, 0, rcvBuffer.Length);
+                        if (result.Contains(".Arma2NETAndroidEnd."))
+                            break;
+                    }
+                    //Logger.addMessage(Logger.LogType.Info, "Finished reading in TCP.");
 
-                    String result = System.Text.Encoding.UTF8.GetString(rcvBuffer, 0, rcvBuffer.Length);
                     result = result.TrimEnd('\0'); //trim off null characters
-                    Logger.addMessage(Logger.LogType.Info, "TCP message: " + result);
+                    result = result.Remove(result.Length - 20); //remove .Arma2NETAndroidEnd.
+                    Logger.addMessage(Logger.LogType.Info, "TCP message from Android: " + result);
+                    inbound_messages.Add(result);
 
                     //http://www.codethinked.com/blockingcollection-and-iproducerconsumercollection
-                    foreach (Message msg in messages.GetConsumingEnumerable())
+                    //foreach (string msg in messages.GetConsumingEnumerable())
+                    int count = messages.Count();
+                    while (count != 0)
                     {
                         // Send message back to Android
-                        string send_message = msg.utility + "," + msg.value;
-                        byte[] byteBuffer = System.Text.Encoding.UTF8.GetBytes(send_message);
+                        string msg = messages.Take();
+                        byte[] byteBuffer = System.Text.Encoding.UTF8.GetBytes(msg);
                         netStream.Write(byteBuffer, 0, byteBuffer.Length);
                         netStream.Flush();
-                        Logger.addMessage(Logger.LogType.Info, "TCP message sent.");
+                        //Logger.addMessage(Logger.LogType.Info, "TCP message sent.");
+                        count--;
                     }
+                    //Logger.addMessage(Logger.LogType.Info, "TCP sending final message.");
+                    byte[] finalBuffer = System.Text.Encoding.UTF8.GetBytes(".Arma2NETAndroidEnd.");
+                    netStream.Write(finalBuffer, 0, finalBuffer.Length);
+                    netStream.Flush();
+                    //Logger.addMessage(Logger.LogType.Info, "TCP final message sent.");
+
+                    netStream.Close();
+                    client.Close();
+                }
+                catch (IOException ex)
+                {
+                    Logger.addMessage(Logger.LogType.Warning, "TCP IOException." + ex.ToString());
+                    connected = false;
+                }
+                catch (SocketException ex)
+                {
+                    Logger.addMessage(Logger.LogType.Warning, "TCP SocketException." + ex.ToString());
+                    connected = false;
                 }
                 catch (Exception ex)
                 {
-                    Logger.addMessage(Logger.LogType.Error, "Unable to close connection." + ex.ToString());
+                    Logger.addMessage(Logger.LogType.Error, "Unhandled TCP exception:" + ex.ToString());
+                    connected = false;
                 }
             }
         }

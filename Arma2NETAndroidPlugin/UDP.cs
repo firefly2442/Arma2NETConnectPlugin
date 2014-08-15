@@ -8,7 +8,7 @@ namespace Arma2NETAndroidPlugin
 {
     public abstract class UDP
     {
-        public abstract IEnumerable<string[][]> SendData(string utility, string value, int maxResultSize);
+        public abstract void SendData(string value, int maxResultSize);
 
         public UDP() {
             //constructor

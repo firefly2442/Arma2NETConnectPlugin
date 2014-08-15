@@ -27,18 +27,27 @@ namespace Arma2NETAndroidPlugin
             Startup.StartupConnection();
 
             IList<object> arguments;
-            if (Format.TrySqfAsCollection(args, out arguments) && arguments.Count == 2 && arguments[0] != null && arguments[1] != null)
+            if (Format.TrySqfAsCollection(args, out arguments) && arguments[0] != null)
             {
-                string utility = arguments[0] as string;
-                string value = arguments[1] as string;
+                string value = "";
+                foreach (string arg in arguments)
+                    value = value + arg + ",";
+                value = value.TrimEnd(','); //trim tail comma
 
-                Logger.addMessage(Logger.LogType.Info, "Received - Utility: " + utility + " Value: " + value);
+                Logger.addMessage(Logger.LogType.Info, "Received: " + value);
 
-                IEnumerable<string[][]> returned = Startup.udpconnection.SendData(utility, value, maxResultSize);
+                //send the UDP heartbeat and then send the data over TCP
+                Startup.udpconnection.SendData(value, maxResultSize);
+
+                string returned = "Empty";
+                //pull from the collection to see if we have anything to return
+                if (TCPThread.inbound_messages.Count > 0) {
+                    returned = TCPThread.inbound_messages.Take();
+                }
 
                 //We need to return something even if there's nothing to return, so we just return an empty array if we're not ready yet.
-                if (returned.ToString() == "")
-                    return Format.ObjectAsSqf("[]");
+                //if (returned.ToString() == "")
+                    //return Format.ObjectAsSqf("[]");
                 return Format.ObjectAsSqf(returned);
             }
             else

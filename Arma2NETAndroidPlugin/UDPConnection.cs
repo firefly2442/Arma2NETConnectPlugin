@@ -23,7 +23,7 @@ namespace Arma2NETAndroidPlugin
             }
         }
 
-        public override IEnumerable<string[][]> SendData(string utility, string value, int maxResultSize)
+        public override void SendData(string value, int maxResultSize)
         {
             if (udp_client == null) {
                 SetupNetwork();
@@ -35,14 +35,14 @@ namespace Arma2NETAndroidPlugin
                 //send the data over the network via UDP broadcast
                 byte[] heartbeat = System.Text.Encoding.UTF8.GetBytes("Arma2NETAndroidPlugin");
                 udp_client.Send(heartbeat, heartbeat.Length, ip);
-                Logger.addMessage(Logger.LogType.Info, "Sent UDP heartbeat");
+                //Logger.addMessage(Logger.LogType.Info, "Sent UDP heartbeat");
             }
 
-            //add message to queue
-            Message msg = new Message(utility, value);
-            tcp.messages.Add(msg);
 
-            yield break;
+            //add message to queue only if the TCP connection is up
+            if (tcp.connected) {
+                tcp.messages.Add(value);
+            }
         }
 
         private void SetupNetwork()
@@ -60,7 +60,7 @@ namespace Arma2NETAndroidPlugin
                 }
                 catch (Exception ex)
                 {
-                    Logger.addMessage(Logger.LogType.Error, "Unable to open connection." + ex.ToString());
+                    Logger.addMessage(Logger.LogType.Error, "Unable to open UDP connection." + ex.ToString());
                 }
             }
 
