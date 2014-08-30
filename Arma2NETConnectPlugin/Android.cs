@@ -21,14 +21,14 @@ using Arma2Net;
 namespace Arma2NETConnectPlugin
 {
     //the function name for the plugin (called from Arma side)
-    [Addin("Arma2NETConnectPlugin", Version = "0.1.0.0", Author = "firefly2442", Description = "Passes information from Arma to Droid.")]
-    public class Arma2NETConnect : Addin
+    [Addin("Arma2NETConnect", Version = "0.1.0.0", Author = "firefly2442", Description = "Passes information from Arma to Droid.")]
+    public class Arma2NETConnectPlugin : Addin
     {
         //AsyncAddIn - when you want to pass data from the game and immediately return null
         // then, subsequent checks by the game check to see if the data can be returned.
         //On the SQF side, this means that we can only do one call at a time...
 
-        public Arma2NETConnect()
+        public Arma2NETConnectPlugin()
         {
             InvocationMethod = new AsyncAddinInvocationMethod(this);
         }
