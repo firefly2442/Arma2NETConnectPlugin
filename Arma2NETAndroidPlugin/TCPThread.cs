@@ -56,13 +56,13 @@ namespace Arma2NETAndroidPlugin
                     inbound_messages.Add(result);
 
                     //http://www.codethinked.com/blockingcollection-and-iproducerconsumercollection
-                    //foreach (string msg in messages.GetConsumingEnumerable())
                     int count = messages.Count();
                     while (count != 0)
                     {
                         // Send message back to Android
                         string msg = messages.Take();
-                        byte[] byteBuffer = System.Text.Encoding.UTF8.GetBytes(msg);
+                        //if we have multiple messages, we want to correctly parse them all, thus appending the data with an extra comma
+                        byte[] byteBuffer = System.Text.Encoding.UTF8.GetBytes(msg+",");
                         netStream.Write(byteBuffer, 0, byteBuffer.Length);
                         netStream.Flush();
                         //Logger.addMessage(Logger.LogType.Info, "TCP message sent.");
