@@ -17,7 +17,7 @@ using System.Linq;
 using System.Text;
 using Arma2Net;
 
-namespace Arma2NETAndroidPlugin
+namespace Arma2NETConnectPlugin
 {
     public abstract class UDP
     {

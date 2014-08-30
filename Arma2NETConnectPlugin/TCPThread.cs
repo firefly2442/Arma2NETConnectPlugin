@@ -20,7 +20,7 @@ using System.Net.Sockets;
 using System.Net;
 using System.IO;
 
-namespace Arma2NETAndroidPlugin
+namespace Arma2NETConnectPlugin
 {
     class TCPThread
     {
@@ -58,14 +58,14 @@ namespace Arma2NETAndroidPlugin
                     String result = "";
                     while (((bytesRcvd = netStream.Read(rcvBuffer, 0, rcvBuffer.Length)) > 0)) {
                         result = result + System.Text.Encoding.UTF8.GetString(rcvBuffer, 0, rcvBuffer.Length);
-                        if (result.Contains(".Arma2NETAndroidEnd."))
+                        if (result.Contains(".Arma2NETConnectEnd."))
                             break;
                     }
                     //Logger.addMessage(Logger.LogType.Info, "Finished reading in TCP.");
 
                     result = result.TrimEnd('\0'); //trim off null characters
-                    result = result.Remove(result.Length - 20); //remove .Arma2NETAndroidEnd.
-                    Logger.addMessage(Logger.LogType.Info, "TCP message from Android: " + result);
+                    result = result.Remove(result.Length - 20); //remove .Arma2NETConnectEnd.
+                    Logger.addMessage(Logger.LogType.Info, "TCP message from Droid: " + result);
                     inbound_messages.Add(result);
 
                     //http://www.codethinked.com/blockingcollection-and-iproducerconsumercollection
@@ -82,7 +82,7 @@ namespace Arma2NETAndroidPlugin
                         count--;
                     }
                     //Logger.addMessage(Logger.LogType.Info, "TCP sending final message.");
-                    byte[] finalBuffer = System.Text.Encoding.UTF8.GetBytes(".Arma2NETAndroidEnd.");
+                    byte[] finalBuffer = System.Text.Encoding.UTF8.GetBytes(".Arma2NETConnectEnd.");
                     netStream.Write(finalBuffer, 0, finalBuffer.Length);
                     netStream.Flush();
                     //Logger.addMessage(Logger.LogType.Info, "TCP final message sent.");

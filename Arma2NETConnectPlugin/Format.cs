@@ -22,7 +22,7 @@ using System.Linq;
 using System.Text;
 
 
-namespace Arma2NETAndroidPlugin
+namespace Arma2NETConnectPlugin
 {
     /// <summary>
     /// Utility functions for representing .NET objects as SQF code and vice versa.

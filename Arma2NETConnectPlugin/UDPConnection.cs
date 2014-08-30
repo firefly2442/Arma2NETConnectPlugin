@@ -19,7 +19,7 @@ using System.Net.Sockets;
 using System.Net;
 using System.Threading;
 
-namespace Arma2NETAndroidPlugin
+namespace Arma2NETConnectPlugin
 {
     class UDPConnection : UDP
     {
@@ -46,7 +46,7 @@ namespace Arma2NETAndroidPlugin
 
             if (udp_client != null) {
                 //send the data over the network via UDP broadcast
-                byte[] heartbeat = System.Text.Encoding.UTF8.GetBytes("Arma2NETAndroidPlugin");
+                byte[] heartbeat = System.Text.Encoding.UTF8.GetBytes("Arma2NETConnectPlugin");
                 udp_client.Send(heartbeat, heartbeat.Length, ip);
                 //Logger.addMessage(Logger.LogType.Info, "Sent UDP heartbeat");
             }

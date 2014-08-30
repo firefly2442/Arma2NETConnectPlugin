@@ -18,7 +18,7 @@ using System.Text;
 using Arma2Net;
 using System.IO;
 
-namespace Arma2NETAndroidPlugin
+namespace Arma2NETConnectPlugin
 {
     class Startup
     {
@@ -31,8 +31,8 @@ namespace Arma2NETAndroidPlugin
             if (started_up == false)
             {
                 //create appdata folder if it doesn't already exist
-                var appDataLocation = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Arma2NETAndroid");
-                //check to see if the Arma2NETAndroid folder exists, if not create it
+                var appDataLocation = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Arma2NETConnect");
+                //check to see if the Arma2NETConnect folder exists, if not create it
                 if (!System.IO.Directory.Exists(appDataLocation))
                 {
                     System.IO.Directory.CreateDirectory(appDataLocation);
@@ -42,7 +42,7 @@ namespace Arma2NETAndroidPlugin
                 logger_object = new Logger();
                 Logger.addMessage(Logger.LogType.Info, "Logging started in directory: " + Logger.getLogDir());
 
-                Logger.addMessage(Logger.LogType.Info, "Arma2NETAndroid Plugin Started.");
+                Logger.addMessage(Logger.LogType.Info, "Arma2NETConnect Plugin Started.");
 
                 //Use AssemblyInfo.cs version number
                 //Holy cow this is confusing...

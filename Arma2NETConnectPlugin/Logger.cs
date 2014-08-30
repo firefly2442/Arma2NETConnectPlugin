@@ -17,7 +17,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 
-namespace Arma2NETAndroidPlugin
+namespace Arma2NETConnectPlugin
 {
     class Logger
     {
@@ -55,7 +55,7 @@ namespace Arma2NETAndroidPlugin
                 }
                 else
                 {
-                    logDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Arma2NETAndroid/logs/");
+                    logDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Arma2NETConnect/logs/");
                     if (!System.IO.Directory.Exists(logDir))
                     {
                         System.IO.Directory.CreateDirectory(logDir);

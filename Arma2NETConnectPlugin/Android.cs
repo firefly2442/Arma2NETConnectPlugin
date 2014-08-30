@@ -18,17 +18,17 @@ using System.Text;
 using System.Threading;
 using Arma2Net;
 
-namespace Arma2NETAndroidPlugin
+namespace Arma2NETConnectPlugin
 {
     //the function name for the plugin (called from Arma side)
-    [Addin("Arma2NETAndroid", Version = "0.1.0.0", Author = "firefly2442", Description = "Passes information from Arma to Android.")]
-    public class Arma2NETAndroid : Addin
+    [Addin("Arma2NETConnectPlugin", Version = "0.1.0.0", Author = "firefly2442", Description = "Passes information from Arma to Droid.")]
+    public class Arma2NETConnect : Addin
     {
         //AsyncAddIn - when you want to pass data from the game and immediately return null
         // then, subsequent checks by the game check to see if the data can be returned.
         //On the SQF side, this means that we can only do one call at a time...
 
-        public Arma2NETAndroid()
+        public Arma2NETConnect()
         {
             InvocationMethod = new AsyncAddinInvocationMethod(this);
         }

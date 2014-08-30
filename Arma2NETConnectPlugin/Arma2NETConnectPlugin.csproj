@@ -8,8 +8,8 @@
     <ProjectGuid>{0DCE6CC6-D86D-43FA-BEEF-E97ED7AFF09C}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Arma2NETAndroidPlugin</RootNamespace>
-    <AssemblyName>Arma2NETAndroidPlugin</AssemblyName>
+    <RootNamespace>Arma2NETConnectPlugin</RootNamespace>
+    <AssemblyName>Arma2NETConnectPlugin</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>
