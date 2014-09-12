@@ -25,6 +25,7 @@ namespace Arma2NETConnectPlugin
     {
         private UdpClient udp_client = null;
         private IPEndPoint ip = null;
+        private IPEndPoint ip_local = null;
         private TCPThread tcp = null;
         private Thread tcpthread = null;
 
@@ -45,10 +46,12 @@ namespace Arma2NETConnectPlugin
             Logger.addMessage(Logger.LogType.Info, "Started SendData");
 
             if (udp_client != null) {
+                Logger.addMessage(Logger.LogType.Info, "Sending UDP heartbeat");
                 //send the data over the network via UDP broadcast
                 byte[] heartbeat = System.Text.Encoding.UTF8.GetBytes("Arma2NETConnectPlugin");
                 udp_client.Send(heartbeat, heartbeat.Length, ip);
-                //Logger.addMessage(Logger.LogType.Info, "Sent UDP heartbeat");
+                udp_client.Send(heartbeat, heartbeat.Length, ip_local);
+                Logger.addMessage(Logger.LogType.Info, "Sent UDP heartbeat");
             }
 
 
@@ -68,8 +71,9 @@ namespace Arma2NETConnectPlugin
                 try
                 {
                     udp_client = new UdpClient();
-                    //only send to local network
+                    //only send to local network, try both just in case the router is blocking 255.255.255.255
                     ip = new IPEndPoint(IPAddress.Parse("255.255.255.255"), 65041);
+                    ip_local = new IPEndPoint(getBroadcastAddress(), 65041);
                 }
                 catch (Exception ex)
                 {
@@ -89,6 +93,43 @@ namespace Arma2NETConnectPlugin
                 while (!tcpthread.IsAlive);
                 Logger.addMessage(Logger.LogType.Info, "TCP thread is active.");
             }
+        }
+
+        public static IPAddress getBroadcastAddress()
+        {
+            //http://blogs.msdn.com/b/knom/archive/2008/12/31/ip-address-calculations-with-c-subnetmasks-networks.aspx
+            //https://stackoverflow.com/questions/6803073/get-local-ip-address-c-sharp
+            IPAddress address = null;
+
+            //finds the local IP address
+            IPHostEntry host;
+            host = Dns.GetHostEntry(Dns.GetHostName());
+            foreach (IPAddress ip in host.AddressList)
+            {
+                if (ip.AddressFamily == AddressFamily.InterNetwork)
+                {
+                    address = ip;
+                    Logger.addMessage(Logger.LogType.Info, "Local IP address: " + address.ToString());
+                    break;
+                }
+            }
+
+            IPAddress subnetMask = IPAddress.Parse("255.255.255.0");
+
+            byte[] ipAdressBytes = address.GetAddressBytes();
+            byte[] subnetMaskBytes = subnetMask.GetAddressBytes();
+
+            if (ipAdressBytes.Length != subnetMaskBytes.Length)
+                Logger.addMessage(Logger.LogType.Error, "Lengths of IP address and subnet mask do not match.");
+
+            byte[] broadcastAddress = new byte[ipAdressBytes.Length];
+            for (int i = 0; i < broadcastAddress.Length; i++)
+            {
+                broadcastAddress[i] = (byte)(ipAdressBytes[i] | (subnetMaskBytes[i] ^ 255));
+            }
+            IPAddress bcast = new IPAddress(broadcastAddress);
+            Logger.addMessage(Logger.LogType.Info, "Using broadcast address: " + bcast.ToString());
+            return bcast;
         }
 
         public void CloseConnection()
