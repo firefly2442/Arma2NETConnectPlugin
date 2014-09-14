@@ -69,7 +69,11 @@ namespace Arma2NETConnectPlugin
                     inbound_messages.Add(result);
 
                     //http://www.codethinked.com/blockingcollection-and-iproducerconsumercollection
-                    int count = messages.Count();
+                    int count = 0;
+                    if (messages.Count() > 35) //send messages in batches, this way we don't send too much at once if there's a backlog
+                        count = 35;
+                    else
+                        count = messages.Count();
                     while (count != 0)
                     {
                         // Send message back to Android
