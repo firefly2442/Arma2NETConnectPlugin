@@ -48,18 +48,10 @@ namespace Arma2NETConnectPlugin
             if (State == loggerState.Stopped)
             {
                 //check to see if the logs folder exists, if not create it
-                //check the Arma3 root directory first
-                if (System.IO.Directory.Exists("logs"))
+                logDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Arma2NETConnect/logs/");
+                if (!System.IO.Directory.Exists(logDir))
                 {
-                    logDir = Path.GetFullPath("logs/");
-                }
-                else
-                {
-                    logDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Arma2NETConnect/logs/");
-                    if (!System.IO.Directory.Exists(logDir))
-                    {
-                        System.IO.Directory.CreateDirectory(logDir);
-                    }
+                    System.IO.Directory.CreateDirectory(logDir);
                 }
 
                 //Setup file streams
