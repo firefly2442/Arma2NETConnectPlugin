@@ -70,10 +70,12 @@ namespace Arma2NETConnectPlugin
 
                     //http://www.codethinked.com/blockingcollection-and-iproducerconsumercollection
                     int count = 0;
-                    if (messages.Count() > 35) //send messages in batches, this way we don't send too much at once if there's a backlog
+                    int message_count = messages.Count();
+                    //send messages in batches, this way we don't send too much at once if there's a backlog
+                    if (message_count > 35)
                         count = 35;
                     else
-                        count = messages.Count();
+                        count = message_count;
                     while (count != 0)
                     {
                         // Send message back to Android
