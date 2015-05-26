@@ -25,7 +25,7 @@ namespace Arma2NETConnectPlugin
     class TCPThread
     {
         private TcpListener tcp_listener = null;
-        public bool connected = false;
+        public DateTime last_connected;
         //thread safe queue for adding/removing entries
         public BlockingCollection<string> messages = new BlockingCollection<string>(); //outgoing messages
         public static BlockingCollection<string> inbound_messages = new BlockingCollection<string>(); //inbound messages
@@ -39,7 +39,7 @@ namespace Arma2NETConnectPlugin
 
         public void run()
         {
-            //Logger.addMessage(Logger.LogType.Info, "Run thread, inside method.");
+            Logger.addMessage(Logger.LogType.Info, "Run thread, inside method.");
             byte[] rcvBuffer = new byte[16384]; // Receive buffer, 16KB (corresponds to callExtension limit in Arma)
             while (true)
             {
@@ -51,65 +51,65 @@ namespace Arma2NETConnectPlugin
                     //this blocks until a connection is made
                     client = tcp_listener.AcceptTcpClient(); // Get client connection
                     netStream = client.GetStream();
-                    connected = true;
-                    //Logger.addMessage(Logger.LogType.Info, "Stream up.");
-                    // Receive until client closes connection, indicated by 0 return value
-                    int bytesRcvd;
-                    String result = "";
-                    while (((bytesRcvd = netStream.Read(rcvBuffer, 0, rcvBuffer.Length)) > 0)) {
-                        result = result + System.Text.Encoding.UTF8.GetString(rcvBuffer, 0, rcvBuffer.Length);
-                        if (result.Contains(".Arma2NETConnectEnd."))
-                            break;
-                    }
-                    //Logger.addMessage(Logger.LogType.Info, "Finished reading in TCP.");
 
-                    result = result.TrimEnd('\0'); //trim off null characters
-                    result = result.Remove(result.Length - 20); //remove .Arma2NETConnectEnd.
-                    Logger.addMessage(Logger.LogType.Info, "TCP message from Droid: " + result);
-                    inbound_messages.Add(result);
-
-                    //http://www.codethinked.com/blockingcollection-and-iproducerconsumercollection
-                    int count = 0;
-                    int message_count = messages.Count();
-                    //send messages in batches, this way we don't send too much at once if there's a backlog
-                    if (message_count > 35)
-                        count = 35;
-                    else
-                        count = message_count;
-                    while (count != 0)
+                    while (true) //try to keep the TCP socket connection open for as long as possible
                     {
-                        // Send message back to Android
-                        string msg = messages.Take();
-                        //if we have multiple messages, we want to correctly parse them all, thus appending the data with an extra comma
-                        byte[] byteBuffer = System.Text.Encoding.UTF8.GetBytes(msg+",");
-                        netStream.Write(byteBuffer, 0, byteBuffer.Length);
-                        netStream.Flush();
-                        //Logger.addMessage(Logger.LogType.Info, "TCP message sent.");
-                        count--;
-                    }
-                    //Logger.addMessage(Logger.LogType.Info, "TCP sending final message.");
-                    byte[] finalBuffer = System.Text.Encoding.UTF8.GetBytes(".Arma2NETConnectEnd.");
-                    netStream.Write(finalBuffer, 0, finalBuffer.Length);
-                    netStream.Flush();
-                    //Logger.addMessage(Logger.LogType.Info, "TCP final message sent.");
+                        last_connected = DateTime.Now;
+                        //Logger.addMessage(Logger.LogType.Info, "Stream up.");
+                        // Receive until client closes connection, indicated by 0 return value
+                        int bytesRcvd;
+                        String result = "";
+                        while (((bytesRcvd = netStream.Read(rcvBuffer, 0, rcvBuffer.Length)) > 0))
+                        {
+                            result = result + System.Text.Encoding.UTF8.GetString(rcvBuffer, 0, rcvBuffer.Length);
+                            if (result.Contains(".Arma2NETConnectEnd."))
+                                break;
+                        }
+                        Logger.addMessage(Logger.LogType.Info, "Finished reading in TCP.");
 
-                    netStream.Close();
-                    client.Close();
+                        result = result.TrimEnd('\0'); //trim off null characters
+                        result = result.Remove(result.Length - 20); //remove .Arma2NETConnectEnd.
+                        Logger.addMessage(Logger.LogType.Info, "TCP message from Droid: " + result);
+                        inbound_messages.Add(result);
+
+                        //http://www.codethinked.com/blockingcollection-and-iproducerconsumercollection
+                        int count = 0;
+                        int message_count = messages.Count();
+                        Logger.addMessage(Logger.LogType.Info, "Message count: " + message_count);
+                        //send messages in batches, this way we don't send too much at once if there's a backlog
+                        if (message_count > 35)
+                            count = 35;
+                        else
+                            count = message_count;
+                        while (count != 0)
+                        {
+                            // Send message back to Android
+                            string msg = messages.Take();
+                            //if we have multiple messages, we want to correctly parse them all, thus appending the data with an extra comma
+                            byte[] byteBuffer = System.Text.Encoding.UTF8.GetBytes(msg + ",");
+                            netStream.Write(byteBuffer, 0, byteBuffer.Length);
+                            netStream.Flush();
+                            Logger.addMessage(Logger.LogType.Info, "TCP message sent.");
+                            count--;
+                        }
+                        Logger.addMessage(Logger.LogType.Info, "TCP sending final message.");
+                        byte[] finalBuffer = System.Text.Encoding.UTF8.GetBytes(".Arma2NETConnectEnd.");
+                        netStream.Write(finalBuffer, 0, finalBuffer.Length);
+                        netStream.Flush();
+                        Logger.addMessage(Logger.LogType.Info, "TCP final message sent.");
+                    }
                 }
                 catch (IOException ex)
                 {
                     Logger.addMessage(Logger.LogType.Warning, "TCP IOException." + ex.ToString());
-                    connected = false;
                 }
                 catch (SocketException ex)
                 {
                     Logger.addMessage(Logger.LogType.Warning, "TCP SocketException." + ex.ToString());
-                    connected = false;
                 }
                 catch (Exception ex)
                 {
                     Logger.addMessage(Logger.LogType.Error, "Unhandled TCP exception:" + ex.ToString());
-                    connected = false;
                 }
             }
         }

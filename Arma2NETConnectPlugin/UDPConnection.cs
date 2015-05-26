@@ -52,8 +52,12 @@ namespace Arma2NETConnectPlugin
             }
 
 
-            //add message to queue only if the TCP connection is up
-            if (tcp.connected) {
+            //add message to queue only if the TCP connection is up and we've gotten something in the last 4 seconds
+            if (tcp.last_connected != null && (DateTime.Now - tcp.last_connected).Seconds < 4) {
+                //if the queue has gotten too large, pop off old element (FIFO) to make room before we add
+                if (tcp.messages.Count > 120) {
+                    tcp.messages.Take();
+                }
                 tcp.messages.Add(value);
             }
         }
