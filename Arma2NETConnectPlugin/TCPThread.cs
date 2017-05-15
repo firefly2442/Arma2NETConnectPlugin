@@ -68,7 +68,7 @@ namespace Arma2NETConnectPlugin
                         Logger.addMessage(Logger.LogType.Info, "Finished reading in TCP.");
 
                         result = result.TrimEnd('\0'); //trim off null characters
-                        result = result.Remove(result.Length - 20); //remove .Arma2NETConnectEnd.
+                        result = result.Replace(".Arma2NETConnectEnd.", "");
                         Logger.addMessage(Logger.LogType.Info, "TCP message from Droid: " + result);
                         inbound_messages.Add(result);
 
