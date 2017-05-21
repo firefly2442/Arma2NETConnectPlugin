@@ -31,7 +31,8 @@ namespace Arma2NETConnectPlugin
         {
             Logger.addMessage(Logger.LogType.Info, "MapServe run thread, inside method.");
 
-            while (true)
+            Boolean run = true;
+            while (run)
             {
                 // Run forever, accepting and servicing connections
                 TcpClient client = null;
@@ -43,6 +44,7 @@ namespace Arma2NETConnectPlugin
                     client = tcp_listener.AcceptTcpClient(); // Get client connection
                     Logger.addMessage(Logger.LogType.Info, "MapServe - setting up stream.");
                     netStream = client.GetStream();
+                    int ListSize = 0;
 
                     while (true) //try to keep the TCP socket connection open for as long as possible
                     {
@@ -50,58 +52,65 @@ namespace Arma2NETConnectPlugin
                         // Receive until client closes connection, indicated by 0 return value
                         int bytesRcvd;
                         String result = "";
-                        bool getMapFiles = true;
+                        String streamCase = "1";
                         byte[] rcvBuffer = new byte[32000]; //32 KB
                         while ((bytesRcvd = netStream.Read(rcvBuffer, 0, rcvBuffer.Length)) > 0)
                         {
                             result = result + System.Text.Encoding.UTF8.GetString(rcvBuffer, 0, rcvBuffer.Length);
-                            if (result.Contains(".GetMapFiles.")) {
-                                getMapFiles = true;
-                                break;
+                            if (result.Contains(".GetListSize.")) {
+                                streamCase = "1";
+                            } else if (result.Contains(".GetMapFiles.")) {
+                                streamCase = "2";
                             } else if (result.Contains(".GetFile.")) {
-                                getMapFiles = false;
-                                break;
+                                streamCase = "3";
                             }
+                            break;
                         }
-                        Logger.addMessage(Logger.LogType.Info, "MapServe - Finished reading in TCP.");
+                        if (result.Contains(".Shutdown.")) {
+                            netStream.Close();
+                            client.Close();
+                            run = false;
+                            Logger.addMessage(Logger.LogType.Info, "MapServe - Finished, shutting down.");
+                            break;
+                        }
 
                         //Logger.addMessage(Logger.LogType.Info, "MapServe - TCP message before culling: '" + result + "'");
 
                         result = result.TrimEnd('\0'); //trim off null characters
+                        result = result.Replace(".GetListSize.", "");
                         result = result.Replace(".GetMapFiles.", "");
                         result = result.Replace(".GetFile.", "");
 
                         //Logger.addMessage(Logger.LogType.Info, "MapServe - TCP message from Droid: '" + result + "'");
 
-                        if (getMapFiles) {
+                        if (streamCase == "1") {
+                            var msg = getFilesList();
+                            byte[] sizeBuffer = System.Text.Encoding.UTF8.GetBytes(msg);
+                            ListSize = sizeBuffer.Length;
+                            Logger.addMessage(Logger.LogType.Info, "MapServe - sent list size: " + ListSize);
+
+                            byte[] sendSizeBuffer = System.Text.Encoding.UTF8.GetBytes(ListSize.ToString());
+                            netStream.Write(sendSizeBuffer, 0, sendSizeBuffer.Length);
+
+                            byte[] finalMsgBuffer = System.Text.Encoding.UTF8.GetBytes(".GetListSize.");
+                            netStream.Write(finalMsgBuffer, 0, finalMsgBuffer.Length);
+                        } else if (streamCase == "2") {
                             Logger.addMessage(Logger.LogType.Info, "MapServe - starting to get map files.");
                             //get a list of all the directories and files that we will need to push
                             Logger.addMessage(Logger.LogType.Info, "MapServe - path: " + Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "maps"));
 
-                            String[] allFolders = Directory.GetDirectories(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "maps"), "*.*", System.IO.SearchOption.AllDirectories);
-                            String[] allFiles = Directory.GetFiles(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "maps"), "*.*", System.IO.SearchOption.AllDirectories);
-                            var msg = "";
-                            foreach (string s in allFolders) {
-                                msg = msg + s + "\n";
-                            }
-                            foreach (string s in allFiles) {
-                                if (s.EndsWith(".png")) {
-                                    long sSize = new System.IO.FileInfo(s).Length; //get filesize in bytes
-                                    msg = msg + sSize + "\t" + s + "\n";
-                                }
-                            }
+                            var msg = getFilesList();
 
-                            //replace the full paths so we just have relative paths
-                            msg = msg.Replace(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "maps"), "");
-                            Logger.addMessage(Logger.LogType.Info, "MapServe - msg: " + msg);
+                            Logger.addMessage(Logger.LogType.Info, "MapServe - msg: '" + msg + "'");
 
                             byte[] byteBuffer = System.Text.Encoding.UTF8.GetBytes(msg);
+                            Logger.addMessage(Logger.LogType.Info, "MapServe - Need to send file list bytes size:" + byteBuffer.Length);
                             netStream.Write(byteBuffer, 0, byteBuffer.Length);
                             byte[] finalBuffer = System.Text.Encoding.UTF8.GetBytes(".GetMapFiles.");
                             netStream.Write(finalBuffer, 0, finalBuffer.Length);
                             netStream.Flush();
                             Logger.addMessage(Logger.LogType.Info, "MapServe - TCP final message sent.");
-                        } else {
+                        } else if (streamCase == "3") {
                             //send file
                             result = result.Replace("/", "\\");
                             Logger.addMessage(Logger.LogType.Info, "MapServe - Getting fullpath: " + Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\maps" + result);
@@ -140,6 +149,29 @@ namespace Arma2NETConnectPlugin
                     Logger.addMessage(Logger.LogType.Error, "Unhandled MapServe exception:" + ex.ToString());
                 }
             }
+        }
+
+
+
+        private String getFilesList()
+        {
+            String[] allFolders = Directory.GetDirectories(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "maps"), "*.*", System.IO.SearchOption.AllDirectories);
+            String[] allFiles = Directory.GetFiles(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "maps"), "*.*", System.IO.SearchOption.AllDirectories);
+            var msg = "";
+            foreach (string s in allFolders) {
+                msg = msg + s + "\n";
+            }
+            foreach (string s in allFiles) {
+                if (s.EndsWith(".png")) {
+                    long sSize = new System.IO.FileInfo(s).Length; //get filesize in bytes
+                    msg = msg + sSize + "\t" + s + "\n";
+                }
+            }
+
+            //replace the full paths so we just have relative paths
+            msg = msg.Replace(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "maps"), "");
+
+            return msg;
         }
     }
 }
