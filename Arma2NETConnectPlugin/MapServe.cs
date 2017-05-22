@@ -44,7 +44,6 @@ namespace Arma2NETConnectPlugin
                     client = tcp_listener.AcceptTcpClient(); // Get client connection
                     Logger.addMessage(Logger.LogType.Info, "MapServe - setting up stream.");
                     netStream = client.GetStream();
-                    int ListSize = 0;
 
                     while (true) //try to keep the TCP socket connection open for as long as possible
                     {
@@ -85,10 +84,9 @@ namespace Arma2NETConnectPlugin
 
                         if (streamCase == "1") {
                             var msg = getFilesList();
-                            ListSize = msg.Length + ".GetMapFiles.".Length;
-                            Logger.addMessage(Logger.LogType.Info, "MapServe - sent list size: " + ListSize); //in string character length
+                            Logger.addMessage(Logger.LogType.Info, "MapServe - sent list length: " + msg.Length); //in string character length
 
-                            byte[] sendSizeBuffer = System.Text.Encoding.UTF8.GetBytes(ListSize.ToString());
+                            byte[] sendSizeBuffer = System.Text.Encoding.UTF8.GetBytes(msg.Length.ToString());
                             netStream.Write(sendSizeBuffer, 0, sendSizeBuffer.Length);
 
                             byte[] finalMsgBuffer = System.Text.Encoding.UTF8.GetBytes(".GetListSize.");
@@ -99,14 +97,11 @@ namespace Arma2NETConnectPlugin
                             Logger.addMessage(Logger.LogType.Info, "MapServe - path: " + Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "maps"));
 
                             var msg = getFilesList();
-
                             Logger.addMessage(Logger.LogType.Info, "MapServe - msg: '" + msg + "'");
 
                             byte[] byteBuffer = System.Text.Encoding.UTF8.GetBytes(msg);
                             Logger.addMessage(Logger.LogType.Info, "MapServe - Need to send file list bytes size:" + byteBuffer.Length);
                             netStream.Write(byteBuffer, 0, byteBuffer.Length);
-                            byte[] finalBuffer = System.Text.Encoding.UTF8.GetBytes(".GetMapFiles.");
-                            netStream.Write(finalBuffer, 0, finalBuffer.Length);
                             netStream.Flush();
                             Logger.addMessage(Logger.LogType.Info, "MapServe - TCP final message sent.");
                         } else if (streamCase == "3") {
