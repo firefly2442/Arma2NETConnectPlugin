@@ -85,9 +85,10 @@ namespace Arma2NETConnectPlugin
 
                         if (streamCase == "1") {
                             var msg = getFilesList();
-                            byte[] sizeBuffer = System.Text.Encoding.UTF8.GetBytes(msg);
-                            ListSize = sizeBuffer.Length;
-                            Logger.addMessage(Logger.LogType.Info, "MapServe - sent list size: " + ListSize);
+                            //byte[] sizeBuffer = System.Text.Encoding.UTF8.GetBytes(msg);
+                            ListSize = msg.Length + ".GetMapFiles.".Length;
+                            //ListSize = ListSize + System.Text.Encoding.UTF8.GetBytes(".GetMapFiles.").Length;
+                            Logger.addMessage(Logger.LogType.Info, "MapServe - sent list size: " + ListSize); //in string character length
 
                             byte[] sendSizeBuffer = System.Text.Encoding.UTF8.GetBytes(ListSize.ToString());
                             netStream.Write(sendSizeBuffer, 0, sendSizeBuffer.Length);
