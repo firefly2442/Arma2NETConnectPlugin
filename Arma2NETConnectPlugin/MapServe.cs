@@ -47,7 +47,6 @@ namespace Arma2NETConnectPlugin
 
                     while (true) //try to keep the TCP socket connection open for as long as possible
                     {
-                        Logger.addMessage(Logger.LogType.Info, "MapServe - Stream up.");
                         // Receive until client closes connection, indicated by 0 return value
                         int bytesRcvd;
                         String result = "";
@@ -97,19 +96,17 @@ namespace Arma2NETConnectPlugin
                             Logger.addMessage(Logger.LogType.Info, "MapServe - path: " + Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "maps"));
 
                             var msg = getFilesList();
-                            Logger.addMessage(Logger.LogType.Info, "MapServe - msg: '" + msg + "'");
+                            //Logger.addMessage(Logger.LogType.Info, "MapServe - msg: '" + msg + "'");
 
                             byte[] byteBuffer = System.Text.Encoding.UTF8.GetBytes(msg);
                             Logger.addMessage(Logger.LogType.Info, "MapServe - Need to send file list bytes size:" + byteBuffer.Length);
                             netStream.Write(byteBuffer, 0, byteBuffer.Length);
                             netStream.Flush();
-                            Logger.addMessage(Logger.LogType.Info, "MapServe - TCP final message sent.");
+                            //Logger.addMessage(Logger.LogType.Info, "MapServe - TCP final message sent.");
                         } else if (streamCase == "3") {
                             //send file
                             result = result.Replace("/", "\\");
-                            Logger.addMessage(Logger.LogType.Info, "MapServe - Getting fullpath: " + Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\maps" + result);
                             var filepath = Path.GetFullPath(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)+@"\maps"+result); //@ denotes string literal
-                            Logger.addMessage(Logger.LogType.Info, "MapServe - sending file: " + filepath);
 
                             //https://www.codeproject.com/Articles/32633/Sending-Files-using-TCP
                             Stream fileStream = File.OpenRead(filepath);
@@ -120,7 +117,7 @@ namespace Arma2NETConnectPlugin
                             int CurrentPacketLength;
                             byte[] SendingBuffer;
                             for (int i = 0; i < numPackets; i++) {
-                                Logger.addMessage(Logger.LogType.Info, "MapServe - number packets to send: " + (numPackets-i));
+                                //Logger.addMessage(Logger.LogType.Info, "MapServe - number packets to send: " + (numPackets-i));
                                 if (TotalLength > sendFileBuffer.Length) {
                                     CurrentPacketLength = sendFileBuffer.Length;
                                     TotalLength = TotalLength - CurrentPacketLength;
@@ -134,7 +131,7 @@ namespace Arma2NETConnectPlugin
                                 netStream.Flush();
                             }
                             fileStream.Close();
-                            Logger.addMessage(Logger.LogType.Info, "MapServe - finished sending file!");
+                            //Logger.addMessage(Logger.LogType.Info, "MapServe - finished sending file!");
                         }
                     }
                 }
