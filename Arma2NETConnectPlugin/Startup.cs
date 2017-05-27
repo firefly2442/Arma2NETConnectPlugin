@@ -25,6 +25,7 @@ namespace Arma2NETConnectPlugin
         public static Logger logger_object = null;
         public static Boolean started_up = false;
         public static UDPConnection udpconnection = null;
+        public static MapServe mapconnection = null;
 
         public static void StartupConnection()
         {
@@ -52,6 +53,8 @@ namespace Arma2NETConnectPlugin
                 Logger.addMessage(Logger.LogType.Info, "Version number: " + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
 
                 udpconnection = new UDPConnection();
+
+                mapconnection = new MapServe();
 
                 //set mutex so we know we've started everything up
                 started_up = true;

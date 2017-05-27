@@ -59,7 +59,7 @@ namespace Arma2NETConnectPlugin
                         // Receive until client closes connection, indicated by 0 return value
                         int bytesRcvd;
                         String result = "";
-                        while (((bytesRcvd = netStream.Read(rcvBuffer, 0, rcvBuffer.Length)) > 0))
+                        while ((bytesRcvd = netStream.Read(rcvBuffer, 0, rcvBuffer.Length)) > 0)
                         {
                             result = result + System.Text.Encoding.UTF8.GetString(rcvBuffer, 0, rcvBuffer.Length);
                             if (result.Contains(".Arma2NETConnectEnd."))
