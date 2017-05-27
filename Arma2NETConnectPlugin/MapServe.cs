@@ -153,7 +153,7 @@ namespace Arma2NETConnectPlugin
                 msg = msg + s + "\n";
             }
             foreach (string s in allFiles) {
-                if (s.EndsWith(".png")) {
+                if (s.EndsWith(".png") || s.EndsWith(".txt")) {
                     long sSize = new System.IO.FileInfo(s).Length; //get filesize in bytes
                     msg = msg + sSize + "\t" + s + "\n";
                 }
